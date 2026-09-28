@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Gender-Minority Healthcare — MCQ Practice</title>
+<style>
+:root{--bg:#f5f7fb;--card:#fff;--ink:#172033;--muted:#657089;--accent:#365cf5;--accent2:#eef2ff;--border:#dfe4ee;--good:#15803d}
+*{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,Segoe UI,Arial,sans-serif}
+.wrap{max-width:1000px;margin:auto;padding:28px 18px 60px}
+header{background:linear-gradient(135deg,#172554,#365cf5);color:white;border-radius:20px;padding:28px;margin-bottom:18px;box-shadow:0 12px 30px #1e3a8a22}
+h1{margin:0 0 8px;font-size:clamp(25px,4vw,38px)} header p{margin:6px 0;color:#e8edff;line-height:1.5}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;background:var(--card);padding:15px;border:1px solid var(--border);border-radius:14px;margin-bottom:15px;align-items:center}
+button,select{font:inherit;border-radius:10px;border:1px solid var(--border);padding:10px 14px;background:white;cursor:pointer}
+button.primary{background:var(--accent);color:white;border-color:var(--accent)} button:hover{filter:brightness(.97)}
+.status{margin-left:auto;color:var(--muted);font-size:14px}
+.progress{height:8px;background:#e7eaf1;border-radius:99px;overflow:hidden;margin:0 0 18px} .bar{height:100%;background:var(--accent);width:0;transition:.2s}
+.card{background:var(--card);border:1px solid var(--border);border-radius:18px;padding:24px;margin-bottom:16px;box-shadow:0 6px 20px #17203308}
+.qhead{display:flex;gap:12px;align-items:flex-start} .num{background:var(--accent2);color:var(--accent);font-weight:800;border-radius:9px;padding:6px 9px;white-space:nowrap}
+.qtext{font-size:18px;font-weight:650;line-height:1.45;margin:2px 0 18px}
+.option{display:block;border:1px solid var(--border);border-radius:11px;padding:12px 13px;margin:9px 0;cursor:pointer;transition:.15s}
+.option:hover{border-color:#aeb9f5;background:#fafbff} .option input{margin-right:10px;accent-color:var(--accent)}
+.option.selected{border-color:var(--accent);background:var(--accent2)}
+textarea{width:100%;min-height:130px;border:1px solid var(--border);border-radius:12px;padding:12px;font:inherit;resize:vertical}
+.actions{display:flex;gap:10px;justify-content:space-between;flex-wrap:wrap;margin-top:18px}
+.results{display:none;background:white;border:1px solid var(--border);border-radius:18px;padding:24px}
+.results h2{margin-top:0} .stat{font-size:28px;font-weight:800;color:var(--accent)} .small{color:var(--muted);font-size:14px}
+.hidden{display:none!important}
+@media(max-width:600px){.wrap{padding:16px 10px 40px} .card{padding:18px} .status{width:100%;margin-left:0}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+<h1>Gender-Minority Healthcare</h1>
+<p>MCQ / Questionnaire Practice Website</p>
+<p class="small" style="color:#dbe4ff">Choose any questions, answer them online, track your progress, and review your selections. This version preserves the questionnaire as supplied and does not assign “correct” answers to opinion-based items.</p>
+</header>
+
+<div class="toolbar">
+<label>Questions to practice:
+<select id="count">
+<option value="all">All 28</option><option value="5">5 random</option><option value="10">10 random</option><option value="15">15 random</option><option value="20">20 random</option>
+</select></label>
+<button class="primary" onclick="startQuiz()">Start / Randomize</button>
+<button onclick="clearAnswers()">Clear answers</button>
+<div class="status" id="status">0 answered</div>
+</div>
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<main id="quiz"></main>
+<div class="actions">
+<button onclick="prevPage()">← Previous</button>
+<button class="primary" onclick="nextPage()">Next →</button>
+</div>
+<button class="primary" style="width:100%;margin-top:12px;padding:13px" onclick="finishQuiz()">Finish & View Summary</button>
+
+<section class="results" id="results"></section>
+</div>
+
+<script>
+const BANK = [{"id": "1", "question": "Age", "options": ["<20 years", "20–29 years", "30–39 years", "40–49 years", "≥50 years"], "type": "single"}, {"id": "2", "question": "Gender", "options": ["Male", "Female", "Prefer not to say", "Other"], "type": "single"}, {"id": "3", "question": "Are you a healthcare professional/student?", "options": ["Yes", "No"], "type": "single"}, {"id": "4", "question": "Have you ever interacted with a gender-minority person?", "options": ["Yes", "No", "Not sure"], "type": "single"}, {"id": "5", "question": "Every person deserves equal rights and respect regardless of their gender identity.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "6", "question": "Gender minorities should receive the same standard of healthcare as other patients.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "7", "question": "Society should speak up when someone is treated unfairly because of their gender identity.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "8", "question": "Discrimination against a person because of their gender identity can negatively affect their health and wellbeing.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "9", "question": "Healthcare institutions should have policies to prevent discrimination against gender-minority patients.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "10", "question": "What challenges do you think gender-minority patients may face when accessing healthcare? (Select all that apply.)", "options": ["Fear of discrimination", "Lack of privacy", "Stigma or negative attitudes", "Lack of knowledgeable healthcare professionals", "Financial difficulties", "Difficulty communicating with healthcare staff", "Previous negative healthcare experiences", "None", "Other"], "type": "multi"}, {"id": "11", "question": "Do you think fear of disrespect or discrimination may cause some gender-minority patients to delay seeking medical care?", "options": ["Yes", "No", "Unsure"], "type": "single"}, {"id": "12", "question": "Do you think healthcare facilities provide adequate privacy for gender-minority patients?", "options": ["Yes", "No", "Unsure"], "type": "single"}, {"id": "13", "question": "Do you think lack of awareness among healthcare workers can create barriers to appropriate healthcare?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "14", "question": "Healthcare professionals should ask patients what name and form of address they prefer to use.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "15", "question": "Healthcare professionals should avoid making assumptions about a patient's gender identity based on appearance.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "16", "question": "Which communication practices would help create a respectful healthcare environment? (Select all that apply.)", "options": ["Use the patient's preferred name", "Use respectful and non-judgmental language", "Maintain confidentiality", "Avoid unnecessary personal questions", "Allow the patient to explain their concerns", "Provide appropriate privacy", "All of the above"], "type": "multi"}, {"id": "17", "question": "A healthcare professional should remain respectful even when they do not personally agree with a patient's gender identity.", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "18", "question": "If a patient does not disclose their true gender identity, but the doctor finds out, do you think the doctor may look at the patient differently?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "19", "question": "Should medical students and healthcare professionals receive training about gender-minority healthcare needs?", "options": ["Yes", "No", "Unsure"], "type": "single"}, {"id": "20", "question": "What areas should such training include? (Select all that apply.)", "options": ["Respectful communication", "Confidentiality and privacy", "Understanding gender identity and terminology", "Common healthcare needs of gender minorities", "Prevention of discrimination and stigma", "Ethical and professional responsibilities", "All of the above"], "type": "multi"}, {"id": "21", "question": "Would regular awareness sessions improve the quality of healthcare provided to gender-minority patients?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "22", "question": "Do you think misconceptions about gender minorities exist among healthcare providers?", "options": ["Yes", "No", "Unsure"], "type": "single"}, {"id": "23", "question": "Do you think such misconceptions can negatively affect the quality of healthcare?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "24", "question": "Which factors do you think are most likely to contribute to misconceptions among healthcare workers?", "options": ["Lack of education/training", "Social stigma", "Cultural beliefs", "Limited professional exposure", "Personal beliefs or attitudes", "Lack of institutional guidance", "Other"], "type": "multi"}, {"id": "25", "question": "What is the most important step healthcare institutions can take to ensure respectful and equal treatment of gender-minority patients?", "options": ["Staff training", "Anti-discrimination policies", "Better privacy and confidentiality", "Improved communication practices", "Patient awareness/education", "All of the above"], "type": "single"}, {"id": "26", "question": "If two individuals from a gender minority come to a doctor—one whose physical structure resembles a woman and the other whose physical structure resembles a man—and both have the same disease with the same severity, do you think their treatment will be different?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "27", "question": "Overall, do you think gender-minority patients should receive the same respectful and professional standard of healthcare as every other patient?", "options": ["Strongly agree", "Agree", "Neutral", "Disagree", "Strongly disagree"], "type": "single"}, {"id": "28", "question": "In your opinion, what can healthcare professionals do to make healthcare services more respectful and accessible for gender-minority patients?", "options": [], "type": "text"}];
+let active=[], page=0, answers={};
+const perPage=5;
+
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function startQuiz(){
+  const v=document.getElementById('count').value;
+  active=v==='all'?[...BANK]:shuffle(BANK).slice(0,Number(v));
+  active.sort((a,b)=>Number(a.id)-Number(b.id)); // keep source order after selection
+  page=0; answers={}; document.getElementById('results').style.display='none'; render();
+}
+function render(){
+  const start=page*perPage, items=active.slice(start,start+perPage);
+  const el=document.getElementById('quiz'); el.innerHTML='';
+  items.forEach(q=>{
+    const card=document.createElement('div'); card.className='card';
+    let opts='';
+    if(q.type==='text'){
+      const val=answers[q.id]||'';
+      opts=`<textarea data-id="${q.id}" placeholder="Write your response here...">${esc(val)}</textarea>`;
+    } else {
+      const inputType=q.type==='multi'?'checkbox':'radio';
+      opts=q.options.map((o,i)=>{
+        const checked=(q.type==='multi'?(answers[q.id]||[]).includes(o):(answers[q.id]===o))?'checked':'';
+        return `<label class="option"><input type="${inputType}" name="q${q.id}" value="${escAttr(o)}" ${checked} onchange="setAnswer('${q.id}',this)"> ${esc(o)}</label>`;
+      }).join('');
+    }
+    card.innerHTML=`<div class="qhead"><span class="num">Q${q.id}</span><div style="flex:1"><div class="qtext">${esc(q.question)}</div>${opts}</div></div>`;
+    el.appendChild(card);
+  });
+  el.querySelectorAll('textarea').forEach(t=>t.addEventListener('input',()=>{answers[t.dataset.id]=t.value;updateStatus()}));
+  updateStatus();
+}
+function setAnswer(id,input){
+  const q=BANK.find(x=>x.id===id);
+  if(q.type==='multi'){
+    const arr=[...document.querySelectorAll(`input[name="q${id}"]:checked`)].map(x=>x.value); answers[id]=arr;
+  } else answers[id]=input.value;
+  updateStatus();
+}
+function updateStatus(){
+  const answered=active.filter(q=>answers[q.id] && (Array.isArray(answers[q.id])?answers[q.id].length:answers[q.id].trim())).length;
+  document.getElementById('status').textContent=`${answered} of ${active.length} answered`;
+  document.getElementById('bar').style.width=(active.length?answered/active.length*100:0)+'%';
+}
+function nextPage(){if((page+1)*perPage<active.length){page++;render();window.scrollTo({top:0,behavior:'smooth'})}else finishQuiz()}
+function prevPage(){if(page>0){page--;render();window.scrollTo({top:0,behavior:'smooth'})}}
+function clearAnswers(){answers={};render();document.getElementById('results').style.display='none'}
+function finishQuiz(){
+  const answered=active.filter(q=>answers[q.id] && (Array.isArray(answers[q.id])?answers[q.id].length:answers[q.id].trim())).length;
+  const unanswered=active.length-answered;
+  const multi=active.filter(q=>q.type==='multi').length;
+  document.getElementById('results').innerHTML=`
+    <h2>Practice Summary</h2>
+    <div class="stat">${answered} / ${active.length}</div>
+    <p>You answered ${answered} selected question(s), with ${unanswered} unanswered.</p>
+    <p class="small">There is no right/wrong score here because the original questionnaire records opinions, perceptions, and personal responses. Multi-select questions are marked in the question text.</p>
+    <p><strong>Selected questions:</strong> ${active.map(q=>'Q'+q.id).join(', ')}</p>
+    <button class="primary" onclick="window.print()">Print / Save Summary</button>
+  `;
+  document.getElementById('results').style.display='block';
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function escAttr(s){return esc(s)}
+startQuiz();
+</script>
+</body>
+</html>
